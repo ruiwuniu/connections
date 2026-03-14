@@ -212,7 +212,6 @@ a, button, [role="button"] {
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.2;
-  white-space: nowrap;
 }
 
 .header-text .subtitle {
@@ -715,32 +714,236 @@ a, button, [role="button"] {
 }
 
 /* ============================================================
-   RESPONSIVE
+   RESPONSIVE — TABLET
    ============================================================ */
 @media (max-width: 900px) {
+  .app {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
   .main-area {
     grid-template-columns: 1fr;
+    grid-template-rows: minmax(50vh, 60vh) auto;
+    overflow: visible;
   }
+
   .sidebar {
     border-left: none;
     border-top: 1px solid var(--color-divider);
-    max-height: 300px;
+    max-height: none;
   }
-  .stats-overlay {
-    grid-template-columns: repeat(2, auto);
+
+  .sidebar-content {
+    max-height: 40vh;
   }
 }
 
+/* ============================================================
+   RESPONSIVE — MOBILE
+   ============================================================ */
 @media (max-width: 600px) {
+  .app {
+    height: auto;
+    min-height: 100dvh;
+    grid-template-rows: auto auto auto auto;
+    overflow: visible;
+  }
+
+  /* Header */
   .header {
     padding: var(--space-3) var(--space-4);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
   }
+
+  .header-left {
+    gap: var(--space-3);
+  }
+
+  .header-logo svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .header-text h1 {
+    font-size: var(--text-sm);
+    line-height: 1.3;
+  }
+
+  .header-text .subtitle {
+    font-size: 0.7rem;
+    line-height: 1.2;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  /* Main area: stack vertically */
+  .main-area {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    overflow: visible;
+  }
+
+  /* Network graph — give it a fixed sensible height */
+  .network-container {
+    height: 55vh;
+    min-height: 320px;
+  }
+
+  /* Stats overlay — horizontal compact bar at top */
   .stats-overlay {
-    grid-template-columns: auto;
+    top: var(--space-2);
+    left: var(--space-2);
+    right: var(--space-2);
+    max-width: none;
+    display: flex;
+    flex-wrap: wrap;
     gap: var(--space-1);
   }
+
   .stat-card {
     padding: var(--space-1) var(--space-2);
+    min-width: auto;
+    flex: 0 0 auto;
+  }
+
+  .stat-card .stat-value {
+    font-size: var(--text-sm);
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.65rem;
+  }
+
+  /* Controls overlay — below stats, left-aligned */
+  .controls-overlay {
+    top: auto;
+    bottom: var(--space-2);
+    right: var(--space-2);
+    left: auto;
+  }
+
+  .color-toggle button {
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.7rem;
+  }
+
+  /* Legend — compact, bottom-left */
+  .legend-overlay {
+    bottom: var(--space-2);
+    left: var(--space-2);
+  }
+
+  .legend-card {
+    padding: var(--space-2);
+    gap: var(--space-1);
+  }
+
+  .legend-title {
+    font-size: 0.65rem;
+  }
+
+  .legend-item {
+    font-size: 0.7rem;
+    gap: var(--space-1);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  /* Sidebar — remove height constraint, full-width */
+  .sidebar {
+    border-left: none;
+    border-top: 1px solid var(--color-divider);
+    max-height: none;
+  }
+
+  .sidebar-header {
+    padding: var(--space-3);
+  }
+
+  .sidebar-content {
+    max-height: 50vh;
+    padding: var(--space-2);
+  }
+
+  .paper-card {
+    padding: var(--space-2);
+    margin-bottom: var(--space-1);
+  }
+
+  .paper-title {
+    font-size: 0.75rem;
+    line-height: 1.35;
+  }
+
+  .paper-meta {
+    font-size: 0.7rem;
+  }
+
+  /* Timeline */
+  .timeline-section {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .timeline-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .slider-container {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .range-slider {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .range-slider input[type="range"] {
+    width: 100%;
+  }
+
+  .slider-label {
+    min-width: auto;
+    font-size: 0.7rem;
+  }
+
+  .timeline-chart {
+    height: 60px;
+  }
+
+  /* Tooltip — constrain to viewport */
+  .tooltip {
+    max-width: calc(100vw - 2rem);
+    font-size: 0.75rem;
+  }
+
+  /* Footer */
+  .footer {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  /* Node labels */
+  .node-label {
+    font-size: 8px;
+  }
+
+  .center-label {
+    font-size: 10px;
   }
 }
 
@@ -1203,7 +1406,9 @@ function showTooltip(event, d) {
   let top = event.clientY - rect.top - 10;
 
   // Keep tooltip in bounds
-  if (left + 280 > rect.width) left = left - 296;
+  const tipW = Math.min(280, rect.width - 16);
+  if (left + tipW > rect.width) left = Math.max(8, rect.width - tipW - 8);
+  if (left < 0) left = 8;
   if (top + 150 > rect.height) top = top - 150;
   if (top < 0) top = 10;
 
@@ -1293,9 +1498,12 @@ function updateNetwork() {
 
   graphData = buildGraphData(yearRange[0], yearRange[1]);
 
-  // Scale for node radius
+  // Scale for node radius (responsive)
+  const isMobileNode = width < 500;
   const maxPapers = Math.max(...graphData.nodes.filter(n => !n.isCenter).map(n => n.papers), 1);
-  const radiusScale = d3.scaleSqrt().domain([1, maxPapers]).range([7, 20]);
+  const radiusScale = d3.scaleSqrt().domain([1, maxPapers]).range(isMobileNode ? [5, 14] : [7, 20]);
+  const centerR = isMobileNode ? 20 : 28;
+  const centerRHover = isMobileNode ? 24 : 32;
 
   // Scale for link width
   const maxWeight = Math.max(...graphData.links.map(l => l.weight), 1);
@@ -1345,7 +1553,7 @@ function updateNetwork() {
     .attr("fill", d => getNodeColor(d))
     .attr("filter", d => d.isCenter ? "url(#center-glow)" : "none")
     .transition().duration(600)
-    .attr("r", d => d.isCenter ? 28 : radiusScale(d.papers))
+    .attr("r", d => d.isCenter ? centerR : radiusScale(d.papers))
     .style("opacity", 1);
 
   // Interactions
@@ -1354,7 +1562,7 @@ function updateNetwork() {
       d3.select(this)
         .attr("filter", "url(#glow)")
         .transition().duration(150)
-        .attr("r", d.isCenter ? 32 : radiusScale(d.papers) * 1.2);
+        .attr("r", d.isCenter ? centerRHover : radiusScale(d.papers) * 1.2);
       showTooltip(event, d);
 
       // Highlight connected links
@@ -1384,7 +1592,7 @@ function updateNetwork() {
       d3.select(this)
         .attr("filter", d.isCenter ? "url(#center-glow)" : "none")
         .transition().duration(150)
-        .attr("r", d.isCenter ? 28 : radiusScale(d.papers));
+        .attr("r", d.isCenter ? centerR : radiusScale(d.papers));
       hideTooltip();
       linkMerge.style("opacity", 1);
       nodeMerge.style("opacity", 1);
@@ -1443,11 +1651,17 @@ function updateNetwork() {
   // === SIMULATION ===
   if (simulation) simulation.stop();
 
+  // Responsive force parameters
+  const isMobile = width < 500;
+  const linkDist = isMobile ? [80, 110] : [140, 180];
+  const chargeSt = isMobile ? [-300, -120] : [-600, -200];
+  const colPad = isMobile ? 12 : 20;
+
   simulation = d3.forceSimulation(graphData.nodes)
-    .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(d => d.primary ? 140 : 180).strength(d => d.primary ? 0.5 : 0.1))
-    .force("charge", d3.forceManyBody().strength(d => d.isCenter ? -600 : -200))
+    .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(d => d.primary ? linkDist[0] : linkDist[1]).strength(d => d.primary ? 0.5 : 0.1))
+    .force("charge", d3.forceManyBody().strength(d => d.isCenter ? chargeSt[0] : chargeSt[1]))
     .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("collision", d3.forceCollide().radius(d => (d.isCenter ? 35 : radiusScale(d.papers)) + 20))
+    .force("collision", d3.forceCollide().radius(d => (d.isCenter ? (isMobile ? 25 : 35) : radiusScale(d.papers)) + colPad))
     .force("x", d3.forceX(width / 2).strength(0.06))
     .force("y", d3.forceY(height / 2).strength(0.06))
     .alpha(0.8)
