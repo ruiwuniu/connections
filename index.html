@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+
+<!-- Perplexity Computer Attribution — SEO Meta Tags -->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr. Ruiwu Niu — Coauthor Network</title>
+<meta name="description" content="Interactive coauthor network visualization for Dr. Ruiwu Niu, Department of Applied Data Science, Hong Kong Shue Yan University.">
+
+<!-- Fonts: Technical/data feel -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- D3.js v7 -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  --text-xs:   clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm:   clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --text-xl:   clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Topic colors */
+  --color-epidemiology: #20808D;
+  --color-network-dynamics: #A84B2F;
+  --color-network-transport: #006494;
+
+  /* Country colors */
+  --color-china: #DA7101;
+  --color-hongkong: #01696F;
+  --color-south-africa: #7A39BB;
+  --color-france: #A13544;
+}
+
+/* DARK MODE (default) */
+[data-theme="dark"] {
+  --color-bg: #0f1729;
+  --color-surface: #162040;
+  --color-surface-2: #1a2850;
+  --color-surface-offset: #0d1220;
+  --color-divider: #243562;
+  --color-border: #2e4272;
+  --color-text: #e0e4ee;
+  --color-text-muted: #8894b2;
+  --color-text-faint: #4d5d82;
+  --color-text-inverse: #0f1729;
+  --color-primary: #4f98a3;
+  --color-primary-hover: #6cb0bb;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
+  --color-edge: rgba(255,255,255,0.18);
+  --color-edge-secondary: rgba(255,255,255,0.06);
+  --node-glow: rgba(255,255,255,0.15);
+  --color-surface-glass: rgba(22, 32, 64, 0.85);
+}
+
+/* LIGHT MODE */
+[data-theme="light"] {
+  --color-bg: #f0f2f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #f7f8fb;
+  --color-surface-offset: #eaecf2;
+  --color-divider: #d4d8e4;
+  --color-border: #c0c6d6;
+  --color-text: #1a2340;
+  --color-text-muted: #5a6488;
+  --color-text-faint: #8d96b2;
+  --color-text-inverse: #f0f2f7;
+  --color-primary: #20808D;
+  --color-primary-hover: #176a75;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.12);
+  --color-edge: rgba(0,0,0,0.18);
+  --color-edge-secondary: rgba(0,0,0,0.06);
+  --node-glow: rgba(0,0,0,0.08);
+  --color-surface-glass: rgba(255, 255, 255, 0.88);
+}
+
+/* ============================================================
+   BASE RESET
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100dvh;
+  line-height: 1.6;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  overflow-x: hidden;
+}
+
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+
+a, button, [role="button"] {
+  transition: color var(--transition-interactive),
+              background var(--transition-interactive),
+              border-color var(--transition-interactive),
+              box-shadow var(--transition-interactive),
+              opacity var(--transition-interactive);
+}
+
+::selection {
+  background: rgba(79, 152, 163, 0.25);
+  color: var(--color-text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  height: 100dvh;
+  max-width: 100vw;
+  overflow: hidden;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header {
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  background: var(--color-surface);
+  flex-wrap: wrap;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.header-logo {
+  flex-shrink: 0;
+}
+
+.header-logo svg {
+  width: 40px;
+  height: 40px;
+}
+
+.header-text h1 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.header-text .subtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.header-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.header-link:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.header-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.icon-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================================
+   MAIN AREA
+   ============================================================ */
+.main-area {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ============================================================
+   NETWORK CONTAINER
+   ============================================================ */
+.network-container {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-bg);
+  min-height: 0;
+}
+
+.network-container svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Stats overlay */
+.stats-overlay {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  z-index: 10;
+  max-width: 340px;
+}
+
+.stat-card {
+  background: var(--color-surface-glass);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  min-width: 80px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.stat-card .stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.stat-card .stat-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: 1.3;
+}
+
+/* Controls overlay */
+.controls-overlay {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  z-index: 10;
+}
+
+.color-toggle {
+  display: flex;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.color-toggle button {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  border-right: 1px solid var(--color-border);
+}
+
+.color-toggle button:last-child {
+  border-right: none;
+}
+
+.color-toggle button.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.color-toggle button:not(.active):hover {
+  background: var(--color-surface-2);
+}
+
+/* Legend */
+.legend-overlay {
+  position: absolute;
+  bottom: var(--space-4);
+  left: var(--space-4);
+  z-index: 10;
+}
+
+.legend-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.legend-title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1000;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-lg);
+  max-width: 280px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 150ms, transform 150ms;
+}
+
+.tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tooltip-name {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-1);
+}
+
+.tooltip-affiliation {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.tooltip-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1) var(--space-4);
+}
+
+.tooltip-stat {
+  font-size: var(--text-xs);
+}
+
+.tooltip-stat-label {
+  color: var(--color-text-faint);
+}
+
+.tooltip-stat-value {
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-divider);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.sidebar-header h2 {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-header .sidebar-subtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+}
+
+.paper-card {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  transition: border-color var(--transition-interactive), background var(--transition-interactive);
+}
+
+.paper-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-2);
+}
+
+.paper-card.highlight {
+  border-color: var(--color-primary);
+  background: var(--color-surface-2);
+}
+
+.paper-title {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: var(--space-1);
+}
+
+.paper-meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.paper-topic {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.paper-citations {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.no-selection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-faint);
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.no-selection svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--space-4);
+  opacity: 0.4;
+}
+
+.no-selection p {
+  font-size: var(--text-sm);
+}
+
+/* Stats in sidebar */
+.sidebar-stats {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.sidebar-stat {
+  text-align: center;
+}
+
+.sidebar-stat .val {
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.sidebar-stat .lbl {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   TIMELINE (bottom bar chart)
+   ============================================================ */
+.timeline-section {
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-surface);
+  padding: var(--space-4) var(--space-6);
+}
+
+.timeline-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.timeline-title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.slider-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  min-width: 80px;
+  text-align: center;
+}
+
+.range-slider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.range-slider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 120px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  outline: none;
+}
+
+.range-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--transition-interactive);
+}
+
+.range-slider input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.range-slider input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.timeline-chart {
+  height: 70px;
+  width: 100%;
+  position: relative;
+}
+
+.timeline-chart svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-surface-offset);
+  padding: var(--space-3) var(--space-6);
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--color-text-faint);
+}
+
+.footer a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: var(--color-primary);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .main-area {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    border-left: none;
+    border-top: 1px solid var(--color-divider);
+    max-height: 300px;
+  }
+  .stats-overlay {
+    grid-template-columns: repeat(2, auto);
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    padding: var(--space-3) var(--space-4);
+  }
+  .stats-overlay {
+    grid-template-columns: auto;
+    gap: var(--space-1);
+  }
+  .stat-card {
+    padding: var(--space-1) var(--space-2);
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print */
+@media print {
+  .header-actions, .controls-overlay, .slider-container, .footer { display: none; }
+  .main-area { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  body { background: white; color: black; }
+}
+
+/* Node labels */
+.node-label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  fill: var(--color-text);
+  pointer-events: none;
+  user-select: none;
+  text-shadow: 0 1px 3px var(--color-bg), 0 0 6px var(--color-bg);
+}
+
+.center-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--color-text);
+  pointer-events: none;
+  user-select: none;
+  text-shadow: 0 1px 4px var(--color-bg), 0 0 8px var(--color-bg);
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <div class="header-logo">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Network graph logo">
+          <circle cx="20" cy="20" r="18" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
+          <circle cx="20" cy="20" r="5" fill="var(--color-epidemiology)"/>
+          <circle cx="10" cy="10" r="3" fill="var(--color-network-dynamics)"/>
+          <circle cx="32" cy="12" r="2.5" fill="var(--color-network-transport)"/>
+          <circle cx="30" cy="30" r="2" fill="var(--color-epidemiology)"/>
+          <circle cx="8" cy="28" r="2.5" fill="var(--color-network-dynamics)"/>
+          <line x1="20" y1="20" x2="10" y2="10" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+          <line x1="20" y1="20" x2="32" y2="12" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+          <line x1="20" y1="20" x2="30" y2="30" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+          <line x1="20" y1="20" x2="8" y2="28" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>Dr. Ruiwu Niu — Coauthor Network</h1>
+        <div class="subtitle">Department of Applied Data Science, Hong Kong Shue Yan University</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a class="header-link" href="https://orcid.org/0000-0002-0695-9007" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 4.378c.525 0 .947.431.947.947s-.422.947-.947.947a.95.95 0 0 1-.947-.947c0-.525.422-.947.947-.947zm-.722 3.038h1.444v10.041H6.647V7.416zm3.562 0h3.9c3.712 0 5.344 2.653 5.344 5.025 0 2.578-2.016 5.025-5.325 5.025h-3.919V7.416zm1.444 1.303v7.444h2.297c3.272 0 4.022-2.484 4.022-3.722 0-1.397-.834-3.722-3.919-3.722h-2.4z"/></svg>
+        ORCID
+      </a>
+      <a class="header-link" href="https://scholar.google.com/citations?user=od8adXEAAAAJ" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.242 13.769L0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/></svg>
+        Scholar
+      </a>
+      <button class="icon-btn" data-theme-toggle aria-label="Switch to light mode" title="Toggle theme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      </button>
+      <button class="icon-btn" id="screenshot-btn" aria-label="Screenshot current view" title="Export screenshot">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <!-- Network Graph -->
+    <div class="network-container" id="network-container">
+      <!-- Stats overlay -->
+      <div class="stats-overlay">
+        <div class="stat-card">
+          <div class="stat-value">17</div>
+          <div class="stat-label">Publications</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">16</div>
+          <div class="stat-label">Coauthors</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">242</div>
+          <div class="stat-label">Citations</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">7</div>
+          <div class="stat-label">h-index</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">4</div>
+          <div class="stat-label">Countries</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">10</div>
+          <div class="stat-label">Years Active</div>
+        </div>
+      </div>
+
+      <!-- Color toggle -->
+      <div class="controls-overlay">
+        <div class="color-toggle">
+          <button class="active" data-color-mode="topic">By Topic</button>
+          <button data-color-mode="country">By Country</button>
+        </div>
+      </div>
+
+      <!-- Legend (dynamic) -->
+      <div class="legend-overlay">
+        <div class="legend-card" id="legend">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Tooltip -->
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2 id="sidebar-title">Publications</h2>
+        <div class="sidebar-subtitle" id="sidebar-subtitle">Click a node to filter</div>
+      </div>
+      <div class="sidebar-content" id="sidebar-content">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline-section">
+    <div class="timeline-top">
+      <span class="timeline-title">Publication Timeline</span>
+      <div class="slider-container">
+        <div class="range-slider">
+          <input type="range" id="year-start" min="2016" max="2025" value="2016">
+        </div>
+        <span class="slider-label" id="slider-label">2016 – 2025</span>
+        <div class="range-slider">
+          <input type="range" id="year-end" min="2016" max="2025" value="2025">
+        </div>
+      </div>
+    </div>
+    <div class="timeline-chart" id="timeline-chart"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const DATA = {
+  author: {
+    name: "Ruiwu Niu",
+    orcid: "0000-0002-0695-9007",
+    affiliation: "Hong Kong Shue Yan University",
+    department: "Department of Applied Data Science",
+    stats: { total_citations: 242, h_index: 7, i10_index: 6 }
+  },
+  publications: [
+    { id:"p1", title:"A new SAIR model on complex networks for analysing the 2019 novel coronavirus (COVID-19)", authors:["Congying Liu","Xiaoqun Wu","Ruiwu Niu","Xiuqi Wu","Ruguo Fan"], journal:"Nonlinear Dynamics", year:2020, citations:73, topic:"Epidemiology" },
+    { id:"p2", title:"Modeling the COVID-19 Pandemic Using an SEIHR Model With Human Migration", authors:["Ruiwu Niu","Eric W. M. Wong","Yin-Chi Chan","Michaël Antonie van Wyk","Guanrong Chen"], journal:"IEEE Access", year:2020, citations:48, topic:"Epidemiology" },
+    { id:"p3", title:"A stochastic SEIHR model for COVID-19 data fluctuations", authors:["Ruiwu Niu","Eric W. M. Wong","Yin-Chi Chan","Michaël Antonie van Wyk","Guanrong Chen"], journal:"Nonlinear Dynamics", year:2021, citations:28, topic:"Epidemiology" },
+    { id:"p4", title:"Opinion Diffusion in Two-Layer Interconnected Networks", authors:["Congying Liu","Xiaoqun Wu","Ruiwu Niu","M. A. Aziz-Alaoui","Jinhu Lü"], journal:"IEEE Transactions on Circuits and Systems I", year:2021, citations:21, topic:"Network Dynamics" },
+    { id:"p5", title:"Modeling the Impact of Vaccination on COVID-19 and Its Delta and Omicron Variants", authors:["Jianbo Wang","Yin-Chi Chan","Ruiwu Niu","Eric W. M. Wong","Michaël Antonie van Wyk"], journal:"Viruses", year:2022, citations:20, topic:"Epidemiology" },
+    { id:"p6", title:"Adaptive Diffusion Processes of Time-Varying Local Information on Networks", authors:["Ruiwu Niu","Xiaoqun Wu","Jun-an Lu","Jinhu Lü"], journal:"IEEE Transactions on Circuits and Systems II", year:2019, citations:17, topic:"Network Dynamics" },
+    { id:"p7", title:"Phase synchronization on spatially embedded duplex networks with total cost constraint", authors:["Ruiwu Niu","Xiaoqun Wu","Jun-an Lu","Jianwen Feng"], journal:"Chaos", year:2018, citations:8, topic:"Network Dynamics" },
+    { id:"p8", title:"Correlations between communicability sequence entropy and transport performance in spatially embedded networks", authors:["Dan Chen","Ruiwu Niu","Gui-Jun Pan"], journal:"Physical Review E", year:2019, citations:7, topic:"Network Transport" },
+    { id:"p9", title:"Transport optimization on complex gradient networks", authors:["Ruiwu Niu","Gui-Jun Pan"], journal:"Chinese Journal of Physics", year:2016, citations:6, topic:"Network Transport" },
+    { id:"p10", title:"Biased random walk in spatially embedded networks with total cost constraint", authors:["Ruiwu Niu","Gui-Jun Pan"], journal:"Physica A", year:2016, citations:4, topic:"Network Transport" },
+    { id:"p11", title:"Self-Organized Optimization of Transport on Complex Networks", authors:["Ruiwu Niu","Gui-Jun Pan"], journal:"Chinese Physics Letters", year:2016, citations:4, topic:"Network Transport" },
+    { id:"p12", title:"Dynamics of a susceptible-infected-recovered model on complex networks with interregional migration", authors:["Ruiwu Niu","Yin-Chi Chan","Eric W. M. Wong","Michaël Antonie van Wyk","Simin Liu"], journal:"Physical Review E", year:2024, citations:3, topic:"Epidemiology" },
+    { id:"p13", title:"Biased random walks on Kleinberg's spatial networks", authors:["Gui-Jun Pan","Ruiwu Niu"], journal:"Physica A", year:2016, citations:3, topic:"Network Transport" },
+    { id:"p14", title:"Stability analysis of an epidemic model with two competing variants and cross-infections", authors:["Ruiwu Niu","Yin-Chi Chan","Simin Liu","Eric W. M. Wong","Michaël Antonie van Wyk"], journal:"Under Review", year:2025, citations:1, topic:"Epidemiology" },
+    { id:"p15", title:"Condensation of Synchronous Orbits on Complex Networks", authors:["Ruiwu Niu","Xiaoqun Wu","Jianwen Feng","Gui-Jun Pan","Jun-an Lu","Guanrong Chen"], journal:"Under Review", year:2021, citations:0, topic:"Network Dynamics" },
+    { id:"p16", title:"Designating Nodal States in Physical Flow Networks via Flow Rerouting", authors:["Ruiwu Niu","Guanrong Chen","Xiaoqun Wu","Jianwen Feng","Michaël Antonie van Wyk"], journal:"Under Review", year:2025, citations:0, topic:"Network Dynamics" },
+    { id:"p17", title:"A competitive epidemic model of two variants", authors:["Ruiwu Niu","Yin-Chi Chan","Simin Liu","Eric W. M. Wong","Michaël Antonie van Wyk"], journal:"Preprint", year:2023, citations:0, topic:"Epidemiology" }
+  ],
+  coauthors: {
+    "Xiaoqun Wu": { papers:6, years:[2018,2019,2020,2021,2021,2025], affiliation:"Shenzhen University, China", country:"China", topics:["Network Dynamics","Epidemiology"] },
+    "Eric W. M. Wong": { papers:7, years:[2020,2020,2021,2022,2023,2024,2025], affiliation:"City University of Hong Kong", country:"Hong Kong", topics:["Epidemiology"] },
+    "Yin-Chi Chan": { papers:6, years:[2020,2021,2022,2023,2024,2025], affiliation:"City University of Hong Kong", country:"Hong Kong", topics:["Epidemiology"] },
+    "Michaël Antonie van Wyk": { papers:7, years:[2020,2021,2022,2023,2024,2025,2025], affiliation:"University of the Witwatersrand, South Africa", country:"South Africa", topics:["Epidemiology","Network Dynamics"] },
+    "Guanrong Chen": { papers:4, years:[2020,2021,2021,2025], affiliation:"City University of Hong Kong", country:"Hong Kong", topics:["Epidemiology","Network Dynamics"] },
+    "Gui-Jun Pan": { papers:5, years:[2016,2016,2016,2016,2019], affiliation:"Hubei University, China", country:"China", topics:["Network Transport"] },
+    "Jinhu Lü": { papers:2, years:[2019,2021], affiliation:"Beihang University, China", country:"China", topics:["Network Dynamics"] },
+    "Jun-an Lu": { papers:2, years:[2018,2019], affiliation:"Wuhan University, China", country:"China", topics:["Network Dynamics"] },
+    "Jianwen Feng": { papers:3, years:[2018,2021,2025], affiliation:"Shenzhen University, China", country:"China", topics:["Network Dynamics"] },
+    "Congying Liu": { papers:2, years:[2020,2021], affiliation:"Wuhan University, China", country:"China", topics:["Epidemiology","Network Dynamics"] },
+    "Simin Liu": { papers:3, years:[2023,2024,2025], affiliation:"City University of Hong Kong", country:"Hong Kong", topics:["Epidemiology"] },
+    "Dan Chen": { papers:1, years:[2019], affiliation:"Hubei University, China", country:"China", topics:["Network Transport"] },
+    "Jianbo Wang": { papers:1, years:[2022], affiliation:"City University of Hong Kong", country:"Hong Kong", topics:["Epidemiology"] },
+    "Xiuqi Wu": { papers:1, years:[2020], affiliation:"Wuhan University, China", country:"China", topics:["Epidemiology"] },
+    "Ruguo Fan": { papers:1, years:[2020], affiliation:"Wuhan University, China", country:"China", topics:["Epidemiology"] },
+    "M. A. Aziz-Alaoui": { papers:1, years:[2021], affiliation:"Université Le Havre Normandie, France", country:"France", topics:["Network Dynamics"] }
+  }
+};
+
+// ============================================================
+// COLOR MAPS
+// ============================================================
+const topicColor = {
+  "Epidemiology": "#20808D",
+  "Network Dynamics": "#A84B2F",
+  "Network Transport": "#006494"
+};
+
+const countryColor = {
+  "China": "#DA7101",
+  "Hong Kong": "#01696F",
+  "South Africa": "#7A39BB",
+  "France": "#A13544"
+};
+
+let colorMode = "topic"; // "topic" or "country"
+let yearRange = [2016, 2025];
+let selectedCoauthor = null;
+
+// ============================================================
+// GRAPH DATA PREPARATION
+// ============================================================
+function buildGraphData(yearStart, yearEnd) {
+  const nodes = [];
+  const links = [];
+
+  // Center node
+  nodes.push({
+    id: "Ruiwu Niu",
+    isCenter: true,
+    papers: DATA.publications.length,
+    affiliation: DATA.author.affiliation,
+    country: "Hong Kong",
+    topics: ["Epidemiology", "Network Dynamics", "Network Transport"],
+    years: [...new Set(DATA.publications.map(p => p.year))].sort()
+  });
+
+  // Filter publications by year
+  const filteredPubs = DATA.publications.filter(p => p.year >= yearStart && p.year <= yearEnd);
+  const activeCoauthors = new Set();
+  filteredPubs.forEach(p => {
+    p.authors.forEach(a => {
+      if (a !== "Ruiwu Niu") activeCoauthors.add(a);
+    });
+  });
+
+  // Coauthor nodes
+  for (const [name, info] of Object.entries(DATA.coauthors)) {
+    if (!activeCoauthors.has(name)) continue;
+    const yearsInRange = info.years.filter(y => y >= yearStart && y <= yearEnd);
+    if (yearsInRange.length === 0) continue;
+
+    nodes.push({
+      id: name,
+      isCenter: false,
+      papers: yearsInRange.length,
+      affiliation: info.affiliation,
+      country: info.country,
+      topics: info.topics,
+      years: [...new Set(yearsInRange)].sort()
+    });
+  }
+
+  // Links from Ruiwu Niu to coauthors
+  const coauthorPaperCount = {};
+  filteredPubs.forEach(p => {
+    p.authors.forEach(a => {
+      if (a !== "Ruiwu Niu") {
+        coauthorPaperCount[a] = (coauthorPaperCount[a] || 0) + 1;
+      }
+    });
+  });
+
+  for (const [name, count] of Object.entries(coauthorPaperCount)) {
+    if (activeCoauthors.has(name)) {
+      links.push({
+        source: "Ruiwu Niu",
+        target: name,
+        weight: count,
+        primary: true
+      });
+    }
+  }
+
+  // Secondary links: coauthors who appear on the same paper
+  filteredPubs.forEach(p => {
+    const coauthorsOnPaper = p.authors.filter(a => a !== "Ruiwu Niu" && activeCoauthors.has(a));
+    for (let i = 0; i < coauthorsOnPaper.length; i++) {
+      for (let j = i + 1; j < coauthorsOnPaper.length; j++) {
+        const existingLink = links.find(l =>
+          !l.primary &&
+          ((l.source === coauthorsOnPaper[i] && l.target === coauthorsOnPaper[j]) ||
+           (l.source === coauthorsOnPaper[j] && l.target === coauthorsOnPaper[i]))
+        );
+        if (existingLink) {
+          existingLink.weight += 1;
+        } else {
+          links.push({
+            source: coauthorsOnPaper[i],
+            target: coauthorsOnPaper[j],
+            weight: 1,
+            primary: false
+          });
+        }
+      }
+    }
+  });
+
+  return { nodes, links };
+}
+
+// ============================================================
+// NODE COLOR
+// ============================================================
+function getNodeColor(d) {
+  if (d.isCenter) return "#ffffff";
+  if (colorMode === "topic") {
+    // Primary topic = first in list
+    return topicColor[d.topics[0]] || "#888";
+  } else {
+    return countryColor[d.country] || "#888";
+  }
+}
+
+// ============================================================
+// LEGEND
+// ============================================================
+function updateLegend() {
+  const legend = document.getElementById("legend");
+  const colors = colorMode === "topic" ? topicColor : countryColor;
+  const title = colorMode === "topic" ? "Topic Area" : "Country";
+
+  legend.innerHTML = `
+    <div class="legend-title">${title}</div>
+    <div class="legend-items">
+      ${Object.entries(colors).map(([name, color]) => `
+        <div class="legend-item">
+          <span class="legend-dot" style="background:${color}"></span>
+          <span>${name}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+// ============================================================
+// SIDEBAR
+// ============================================================
+function updateSidebar(coauthorName) {
+  const content = document.getElementById("sidebar-content");
+  const title = document.getElementById("sidebar-title");
+  const subtitle = document.getElementById("sidebar-subtitle");
+
+  let pubs;
+  if (coauthorName && coauthorName !== "Ruiwu Niu") {
+    pubs = DATA.publications.filter(p => p.authors.includes(coauthorName));
+    title.textContent = coauthorName;
+    subtitle.textContent = `${pubs.length} shared publication${pubs.length !== 1 ? "s" : ""}`;
+  } else if (coauthorName === "Ruiwu Niu") {
+    pubs = DATA.publications;
+    title.textContent = "Ruiwu Niu";
+    subtitle.textContent = `${pubs.length} publications`;
+  } else {
+    pubs = DATA.publications;
+    title.textContent = "All Publications";
+    subtitle.textContent = "Click a node to filter";
+  }
+
+  pubs = pubs.sort((a, b) => b.year - a.year || b.citations - a.citations);
+
+  if (pubs.length === 0) {
+    content.innerHTML = `
+      <div class="no-selection">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+        <p>No publications in selected range</p>
+      </div>
+    `;
+    return;
+  }
+
+  content.innerHTML = pubs.map(p => `
+    <div class="paper-card" data-id="${p.id}">
+      <div class="paper-title">${p.title}</div>
+      <div class="paper-meta">
+        <span class="paper-topic" style="background:${topicColor[p.topic]}"></span>
+        <span>${p.journal}</span>
+        <span>•</span>
+        <span>${p.year}</span>
+        <span>•</span>
+        <span class="paper-citations">${p.citations} cit.</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+// ============================================================
+// TOOLTIP
+// ============================================================
+const tooltipEl = document.getElementById("tooltip");
+
+function showTooltip(event, d) {
+  const yearStr = d.years.length > 1
+    ? `${d.years[0]}–${d.years[d.years.length - 1]}`
+    : `${d.years[0]}`;
+
+  tooltipEl.innerHTML = `
+    <div class="tooltip-name">${d.id}</div>
+    <div class="tooltip-affiliation">${d.affiliation}</div>
+    <div class="tooltip-stats">
+      <div class="tooltip-stat">
+        <div class="tooltip-stat-label">Papers</div>
+        <div class="tooltip-stat-value">${d.isCenter ? DATA.publications.length : d.papers}</div>
+      </div>
+      <div class="tooltip-stat">
+        <div class="tooltip-stat-label">Country</div>
+        <div class="tooltip-stat-value">${d.country}</div>
+      </div>
+      <div class="tooltip-stat">
+        <div class="tooltip-stat-label">Years</div>
+        <div class="tooltip-stat-value">${yearStr}</div>
+      </div>
+      <div class="tooltip-stat">
+        <div class="tooltip-stat-label">Topics</div>
+        <div class="tooltip-stat-value">${d.topics.length}</div>
+      </div>
+    </div>
+  `;
+
+  const container = document.getElementById("network-container");
+  const rect = container.getBoundingClientRect();
+  let left = event.clientX - rect.left + 16;
+  let top = event.clientY - rect.top - 10;
+
+  // Keep tooltip in bounds
+  if (left + 280 > rect.width) left = left - 296;
+  if (top + 150 > rect.height) top = top - 150;
+  if (top < 0) top = 10;
+
+  tooltipEl.style.left = left + "px";
+  tooltipEl.style.top = top + "px";
+  tooltipEl.classList.add("visible");
+}
+
+function hideTooltip() {
+  tooltipEl.classList.remove("visible");
+}
+
+// ============================================================
+// NETWORK VISUALIZATION
+// ============================================================
+let simulation;
+let svg, linkGroup, nodeGroup, labelGroup;
+let graphData;
+
+function initNetwork() {
+  const container = document.getElementById("network-container");
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+
+  svg = d3.select("#network-container")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  // Defs for glow filter
+  const defs = svg.append("defs");
+
+  const filter = defs.append("filter")
+    .attr("id", "glow")
+    .attr("x", "-50%")
+    .attr("y", "-50%")
+    .attr("width", "200%")
+    .attr("height", "200%");
+
+  filter.append("feGaussianBlur")
+    .attr("stdDeviation", "3")
+    .attr("result", "coloredBlur");
+
+  const merge = filter.append("feMerge");
+  merge.append("feMergeNode").attr("in", "coloredBlur");
+  merge.append("feMergeNode").attr("in", "SourceGraphic");
+
+  // Center node glow
+  const centerFilter = defs.append("filter")
+    .attr("id", "center-glow")
+    .attr("x", "-100%")
+    .attr("y", "-100%")
+    .attr("width", "300%")
+    .attr("height", "300%");
+
+  centerFilter.append("feGaussianBlur")
+    .attr("stdDeviation", "6")
+    .attr("result", "coloredBlur");
+
+  const centerMerge = centerFilter.append("feMerge");
+  centerMerge.append("feMergeNode").attr("in", "coloredBlur");
+  centerMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+  // Zoom behavior
+  const zoom = d3.zoom()
+    .scaleExtent([0.3, 4])
+    .on("zoom", (event) => {
+      svgG.attr("transform", event.transform);
+    });
+
+  svg.call(zoom);
+
+  // Main group for zoom/pan
+  const svgG = svg.append("g").attr("class", "network-g");
+
+  linkGroup = svgG.append("g").attr("class", "links");
+  nodeGroup = svgG.append("g").attr("class", "nodes");
+  labelGroup = svgG.append("g").attr("class", "labels");
+
+  updateNetwork();
+}
+
+function updateNetwork() {
+  const container = document.getElementById("network-container");
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+
+  graphData = buildGraphData(yearRange[0], yearRange[1]);
+
+  // Scale for node radius
+  const maxPapers = Math.max(...graphData.nodes.filter(n => !n.isCenter).map(n => n.papers), 1);
+  const radiusScale = d3.scaleSqrt().domain([1, maxPapers]).range([7, 20]);
+
+  // Scale for link width
+  const maxWeight = Math.max(...graphData.links.map(l => l.weight), 1);
+  const linkWidthScale = d3.scaleLinear().domain([1, maxWeight]).range([1, 5]);
+
+  // === LINKS ===
+  const linkSel = linkGroup.selectAll("line")
+    .data(graphData.links, d => `${typeof d.source === 'object' ? d.source.id : d.source}-${typeof d.target === 'object' ? d.target.id : d.target}`);
+
+  linkSel.exit()
+    .transition().duration(400)
+    .style("opacity", 0)
+    .remove();
+
+  const linkEnter = linkSel.enter()
+    .append("line")
+    .style("opacity", 0);
+
+  const linkMerge = linkEnter.merge(linkSel);
+  linkMerge
+    .attr("stroke", d => d.primary ? "var(--color-edge)" : "var(--color-edge-secondary)")
+    .attr("stroke-width", d => d.primary ? linkWidthScale(d.weight) : Math.max(0.5, linkWidthScale(d.weight) * 0.5))
+    .attr("stroke-dasharray", d => d.primary ? "none" : "3,3")
+    .transition().duration(600)
+    .style("opacity", 1);
+
+  // === NODES ===
+  const nodeSel = nodeGroup.selectAll("circle")
+    .data(graphData.nodes, d => d.id);
+
+  nodeSel.exit()
+    .transition().duration(400)
+    .attr("r", 0)
+    .style("opacity", 0)
+    .remove();
+
+  const nodeEnter = nodeSel.enter()
+    .append("circle")
+    .attr("r", 0)
+    .style("opacity", 0)
+    .attr("stroke", "var(--color-bg)")
+    .attr("stroke-width", 2)
+    .style("cursor", "pointer");
+
+  const nodeMerge = nodeEnter.merge(nodeSel);
+  nodeMerge
+    .attr("fill", d => getNodeColor(d))
+    .attr("filter", d => d.isCenter ? "url(#center-glow)" : "none")
+    .transition().duration(600)
+    .attr("r", d => d.isCenter ? 28 : radiusScale(d.papers))
+    .style("opacity", 1);
+
+  // Interactions
+  nodeMerge
+    .on("mouseover", function(event, d) {
+      d3.select(this)
+        .attr("filter", "url(#glow)")
+        .transition().duration(150)
+        .attr("r", d.isCenter ? 32 : radiusScale(d.papers) * 1.2);
+      showTooltip(event, d);
+
+      // Highlight connected links
+      linkMerge.style("opacity", l => {
+        const srcId = typeof l.source === 'object' ? l.source.id : l.source;
+        const tgtId = typeof l.target === 'object' ? l.target.id : l.target;
+        return (srcId === d.id || tgtId === d.id) ? 1 : 0.15;
+      });
+
+      // Dim unconnected nodes
+      const connected = new Set();
+      connected.add(d.id);
+      graphData.links.forEach(l => {
+        const srcId = typeof l.source === 'object' ? l.source.id : l.source;
+        const tgtId = typeof l.target === 'object' ? l.target.id : l.target;
+        if (srcId === d.id) connected.add(tgtId);
+        if (tgtId === d.id) connected.add(srcId);
+      });
+
+      nodeMerge.style("opacity", n => connected.has(n.id) ? 1 : 0.2);
+      labelMerge.style("opacity", n => connected.has(n.id) ? 1 : 0.15);
+    })
+    .on("mousemove", function(event, d) {
+      showTooltip(event, d);
+    })
+    .on("mouseout", function(event, d) {
+      d3.select(this)
+        .attr("filter", d.isCenter ? "url(#center-glow)" : "none")
+        .transition().duration(150)
+        .attr("r", d.isCenter ? 28 : radiusScale(d.papers));
+      hideTooltip();
+      linkMerge.style("opacity", 1);
+      nodeMerge.style("opacity", 1);
+      labelMerge.style("opacity", 1);
+    })
+    .on("click", function(event, d) {
+      selectedCoauthor = (selectedCoauthor === d.id) ? null : d.id;
+      updateSidebar(selectedCoauthor);
+
+      // Visual highlight
+      nodeMerge.attr("stroke-width", n => n.id === selectedCoauthor ? 3 : 2)
+        .attr("stroke", n => n.id === selectedCoauthor ? "var(--color-primary)" : "var(--color-bg)");
+    });
+
+  // Drag behavior
+  nodeMerge.call(d3.drag()
+    .on("start", (event, d) => {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    })
+    .on("drag", (event, d) => {
+      d.fx = event.x;
+      d.fy = event.y;
+    })
+    .on("end", (event, d) => {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    })
+  );
+
+  // === LABELS ===
+  const labelSel = labelGroup.selectAll("text")
+    .data(graphData.nodes, d => d.id);
+
+  labelSel.exit()
+    .transition().duration(400)
+    .style("opacity", 0)
+    .remove();
+
+  const labelEnter = labelSel.enter()
+    .append("text")
+    .attr("class", d => d.isCenter ? "center-label" : "node-label")
+    .attr("text-anchor", "middle")
+    .attr("dy", d => d.isCenter ? 42 : (radiusScale(d.papers) + 14))
+    .style("opacity", 0);
+
+  const labelMerge = labelEnter.merge(labelSel);
+  labelMerge
+    .text(d => d.id)
+    .attr("dy", d => d.isCenter ? 42 : (radiusScale(d.papers) + 14))
+    .transition().duration(600)
+    .style("opacity", 1);
+
+  // === SIMULATION ===
+  if (simulation) simulation.stop();
+
+  simulation = d3.forceSimulation(graphData.nodes)
+    .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(d => d.primary ? 140 : 180).strength(d => d.primary ? 0.5 : 0.1))
+    .force("charge", d3.forceManyBody().strength(d => d.isCenter ? -600 : -200))
+    .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("collision", d3.forceCollide().radius(d => (d.isCenter ? 35 : radiusScale(d.papers)) + 20))
+    .force("x", d3.forceX(width / 2).strength(0.06))
+    .force("y", d3.forceY(height / 2).strength(0.06))
+    .alpha(0.8)
+    .alphaDecay(0.015)
+    .on("tick", () => {
+      linkMerge
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+
+      nodeMerge
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+
+      labelMerge
+        .attr("x", d => d.x)
+        .attr("y", d => d.y);
+    });
+}
+
+// ============================================================
+// TIMELINE BAR CHART
+// ============================================================
+function initTimeline() {
+  const container = document.getElementById("timeline-chart");
+  const width = container.clientWidth;
+  const height = 70;
+
+  const timelineSvg = d3.select("#timeline-chart")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  updateTimeline(timelineSvg, width, height);
+
+  // Observe resize
+  const ro = new ResizeObserver(() => {
+    const newWidth = container.clientWidth;
+    timelineSvg.attr("width", newWidth);
+    updateTimeline(timelineSvg, newWidth, height);
+  });
+  ro.observe(container);
+}
+
+function updateTimeline(timelineSvg, width, height) {
+  timelineSvg.selectAll("*").remove();
+
+  const years = d3.range(2016, 2026);
+  const margin = { left: 30, right: 10, top: 5, bottom: 18 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  // Group papers by year and topic
+  const yearTopicCounts = {};
+  const topics = ["Epidemiology", "Network Dynamics", "Network Transport"];
+  years.forEach(y => {
+    yearTopicCounts[y] = {};
+    topics.forEach(t => yearTopicCounts[y][t] = 0);
+  });
+  DATA.publications.forEach(p => {
+    if (yearTopicCounts[p.year]) yearTopicCounts[p.year][p.topic]++;
+  });
+
+  // Stack data
+  const stackData = years.map(y => ({ year: y, ...yearTopicCounts[y] }));
+  const stack = d3.stack().keys(topics);
+  const series = stack(stackData);
+
+  const maxTotal = d3.max(stackData, d => topics.reduce((sum, t) => sum + d[t], 0));
+
+  const x = d3.scaleBand().domain(years).range([0, innerW]).padding(0.35);
+  const y = d3.scaleLinear().domain([0, Math.max(maxTotal, 1)]).range([innerH, 0]);
+
+  const g = timelineSvg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+  // Bars
+  series.forEach((s, si) => {
+    g.selectAll(`.bar-${si}`)
+      .data(s)
+      .enter()
+      .append("rect")
+      .attr("x", d => x(d.data.year))
+      .attr("y", d => y(d[1]))
+      .attr("height", d => y(d[0]) - y(d[1]))
+      .attr("width", x.bandwidth())
+      .attr("fill", topicColor[topics[si]])
+      .attr("rx", 2)
+      .attr("opacity", d => {
+        const yr = d.data.year;
+        return (yr >= yearRange[0] && yr <= yearRange[1]) ? 0.9 : 0.2;
+      });
+  });
+
+  // Year labels
+  g.selectAll(".year-label")
+    .data(years)
+    .enter()
+    .append("text")
+    .attr("x", d => x(d) + x.bandwidth() / 2)
+    .attr("y", innerH + 14)
+    .attr("text-anchor", "middle")
+    .attr("fill", d => (d >= yearRange[0] && d <= yearRange[1]) ? "var(--color-text-muted)" : "var(--color-text-faint)")
+    .attr("font-size", "10px")
+    .attr("font-family", "var(--font-mono)")
+    .text(d => `'${String(d).slice(2)}`);
+
+  // Y axis (simple)
+  const ticks = y.ticks(3).filter(Number.isInteger);
+  g.selectAll(".y-tick")
+    .data(ticks)
+    .enter()
+    .append("text")
+    .attr("x", -8)
+    .attr("y", d => y(d) + 4)
+    .attr("text-anchor", "end")
+    .attr("fill", "var(--color-text-faint)")
+    .attr("font-size", "10px")
+    .attr("font-family", "var(--font-mono)")
+    .text(d => d);
+
+  // Grid lines
+  g.selectAll(".grid-line")
+    .data(ticks)
+    .enter()
+    .append("line")
+    .attr("x1", 0)
+    .attr("x2", innerW)
+    .attr("y1", d => y(d))
+    .attr("y2", d => y(d))
+    .attr("stroke", "var(--color-divider)")
+    .attr("stroke-width", 0.5)
+    .attr("stroke-dasharray", "3,3");
+}
+
+// ============================================================
+// EVENT HANDLERS
+// ============================================================
+
+// Theme toggle
+(function(){
+  const t = document.querySelector('[data-theme-toggle]');
+  const r = document.documentElement;
+  let d = r.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+  r.setAttribute('data-theme', d);
+  if (t) {
+    t.addEventListener('click', () => {
+      d = d === 'dark' ? 'light' : 'dark';
+      r.setAttribute('data-theme', d);
+      t.setAttribute('aria-label', 'Switch to ' + (d === 'dark' ? 'light' : 'dark') + ' mode');
+      t.innerHTML = d === 'dark'
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    });
+  }
+})();
+
+// Color mode toggle
+document.querySelectorAll("[data-color-mode]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    colorMode = btn.dataset.colorMode;
+    document.querySelectorAll("[data-color-mode]").forEach(b => b.classList.toggle("active", b === btn));
+    updateLegend();
+    // Update node colors
+    nodeGroup.selectAll("circle")
+      .transition().duration(400)
+      .attr("fill", d => getNodeColor(d));
+  });
+});
+
+// Year range sliders
+const yearStartSlider = document.getElementById("year-start");
+const yearEndSlider = document.getElementById("year-end");
+const sliderLabel = document.getElementById("slider-label");
+
+function onSliderChange() {
+  let start = parseInt(yearStartSlider.value);
+  let end = parseInt(yearEndSlider.value);
+  if (start > end) {
+    // Swap
+    if (this === yearStartSlider) {
+      yearEndSlider.value = start;
+      end = start;
+    } else {
+      yearStartSlider.value = end;
+      start = end;
+    }
+  }
+  yearRange = [start, end];
+  sliderLabel.textContent = `${start} – ${end}`;
+  updateNetwork();
+  updateSidebar(selectedCoauthor);
+
+  // Update timeline opacity
+  const timelineSvg = d3.select("#timeline-chart svg");
+  if (!timelineSvg.empty()) {
+    updateTimeline(timelineSvg, document.getElementById("timeline-chart").clientWidth, 70);
+  }
+}
+
+yearStartSlider.addEventListener("input", onSliderChange);
+yearEndSlider.addEventListener("input", onSliderChange);
+
+// Screenshot button
+document.getElementById("screenshot-btn").addEventListener("click", () => {
+  const svgEl = document.querySelector("#network-container svg");
+  if (!svgEl) return;
+
+  // Use html2canvas approach — simple: open SVG in new tab
+  // For simplicity, serialize SVG and open as data URL
+  const serializer = new XMLSerializer();
+  const svgStr = serializer.serializeToString(svgEl);
+  const blob = new Blob([svgStr], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "coauthor-network.svg";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ============================================================
+// INIT
+// ============================================================
+function init() {
+  updateLegend();
+  updateSidebar(null);
+  initNetwork();
+  initTimeline();
+
+  // Handle resize
+  let resizeTimeout;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      const container = document.getElementById("network-container");
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      d3.select("#network-container svg")
+        .attr("width", width)
+        .attr("height", height);
+      if (simulation) {
+        simulation.force("center", d3.forceCenter(width / 2, height / 2));
+        simulation.alpha(0.3).restart();
+      }
+    }, 200);
+  });
+}
+
+// Wait for DOM
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
